@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textarea"
@@ -31,6 +32,11 @@ var quitKeys = key.NewBinding(
 )
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var (
+		tiCmd tea.Cmd
+	)
+
+	m.textarea, tiCmd = m.textarea.Update(msg)
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -39,15 +45,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 		return m, nil
+
 	case errMsg:
 		m.err = msg
 		return m, nil
 
 	default:
 		var cmd tea.Cmd
-		m.viewport.SetContent(read_files("*"))
+		files := read_files("*")
+		m.viewport.Height = len(strings.Split(files, "\n")) - 1
+		m.viewport.SetContent(files)
 		return m, cmd
 	}
+	return m, tea.Batch(tiCmd)
 }
 
 func (m model) View() string {
@@ -71,7 +81,7 @@ func main() {
 }
 func initialModel() model {
 	ta := textarea.New()
-	vp := viewport.New(30, 5)
+	vp := viewport.New(30, 10)
 	return model{
 		textarea:    ta,
 		files:       []string{},
