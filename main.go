@@ -2,37 +2,33 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type errMsg error
-
 type model struct {
-	spinner  spinner.Model
-	quitting bool
-	err      error
+	viewport    viewport.Model
+	files       []string
+	textarea    textarea.Model
+	senderStyle lipgloss.Style
+	quitting    bool
+	err         error
+}
+
+func (m model) Init() tea.Cmd {
+	return textarea.Blink
 }
 
 var quitKeys = key.NewBinding(
 	key.WithKeys("q", "esc", "ctrl+c"),
 	key.WithHelp("", "press q to quit"),
 )
-
-func initialModel() model {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	return model{spinner: s}
-}
-
-func (m model) Init() tea.Cmd {
-	return m.spinner.Tick
-}
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -41,7 +37,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if key.Matches(msg, quitKeys) {
 			m.quitting = true
 			return m, tea.Quit
-
 		}
 		return m, nil
 	case errMsg:
@@ -50,26 +45,49 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	default:
 		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
+		m.viewport.SetContent(read_files("*"))
 		return m, cmd
 	}
 }
 
 func (m model) View() string {
-	if m.err != nil {
-		return m.err.Error()
-	}
-	str := fmt.Sprintf("\n\n   %s Loading forever... %s\n\n", m.spinner.View(), quitKeys.Help().Desc)
-	if m.quitting {
-		return str + "\n"
-	}
-	return str
+	return fmt.Sprintf(
+		"%s%s%s",
+		m.viewport.View(),
+		"\n\n",
+		m.textarea.View(),
+	)
 }
+
+type (
+	errMsg error
+)
 
 func main() {
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
+}
+func initialModel() model {
+	ta := textarea.New()
+	vp := viewport.New(30, 5)
+	return model{
+		textarea:    ta,
+		files:       []string{},
+		viewport:    vp,
+		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
+		err:         nil,
+	}
+}
+func read_files(pattern string) string {
+	matches, err := filepath.Glob(pattern)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var str string
+	for _, match := range matches {
+		str += match + "\n"
+	}
+	return str
 }
