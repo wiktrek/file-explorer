@@ -1,103 +1,94 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	"log"
-	"path/filepath"
+	"os"
 	"strings"
+	"time"
 
-	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/viewport"
+	"github.com/charmbracelet/bubbles/filepicker"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
-	viewport    viewport.Model
-	files       []string
-	textarea    textarea.Model
-	senderStyle lipgloss.Style
-	quitting    bool
-	err         error
+	filepicker   filepicker.Model
+	selectedFile string
+	quitting     bool
+	err          error
+}
+
+type clearErrorMsg struct{}
+
+func clearErrorAfter(t time.Duration) tea.Cmd {
+	return tea.Tick(t, func(_ time.Time) tea.Msg {
+		return clearErrorMsg{}
+	})
 }
 
 func (m model) Init() tea.Cmd {
-	return textarea.Blink
+	return m.filepicker.Init()
 }
 
-var quitKeys = key.NewBinding(
-	key.WithKeys("q", "esc", "ctrl+c"),
-	key.WithHelp("", "press q to quit"),
-)
-
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var (
-		tiCmd tea.Cmd
-	)
-
-	m.textarea, tiCmd = m.textarea.Update(msg)
 	switch msg := msg.(type) {
-
 	case tea.KeyMsg:
-		if key.Matches(msg, quitKeys) {
+		switch msg.String() {
+		case "ctrl+c", "q":
 			m.quitting = true
 			return m, tea.Quit
 		}
-		return m, nil
-
-	case errMsg:
-		m.err = msg
-		return m, nil
-
-	default:
-		var cmd tea.Cmd
-		files := read_files("*")
-		m.viewport.Height = len(strings.Split(files, "\n")) - 1
-		m.viewport.SetContent(files)
-		return m, cmd
+	case clearErrorMsg:
+		m.err = nil
 	}
-	return m, tea.Batch(tiCmd)
+
+	var cmd tea.Cmd
+	m.filepicker, cmd = m.filepicker.Update(msg)
+
+	// Did the user select a file?
+	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
+		// Get the path of the selected file.
+		m.selectedFile = path
+	}
+
+	// Did the user select a disabled file?
+	// This is only necessary to display an error to the user.
+	if didSelect, path := m.filepicker.DidSelectDisabledFile(msg); didSelect {
+		// Let's clear the selectedFile and display an error.
+		m.err = errors.New(path + " is not valid.")
+		m.selectedFile = ""
+		return m, tea.Batch(cmd, clearErrorAfter(2*time.Second))
+	}
+
+	return m, cmd
 }
 
 func (m model) View() string {
-	return fmt.Sprintf(
-		"%s%s%s",
-		m.viewport.View(),
-		"\n\n",
-		m.textarea.View(),
-	)
+	if m.quitting {
+		return ""
+	}
+	var s strings.Builder
+	s.WriteString("\n  ")
+	if m.err != nil {
+		s.WriteString(m.filepicker.Styles.DisabledFile.Render(m.err.Error()))
+	} else if m.selectedFile == "" {
+		s.WriteString("Pick a file:")
+	} else {
+		s.WriteString("Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile))
+	}
+	s.WriteString("\n\n" + m.filepicker.View() + "\n")
+	return s.String()
 }
-
-type (
-	errMsg error
-)
 
 func main() {
-	p := tea.NewProgram(initialModel())
-	if _, err := p.Run(); err != nil {
-		log.Fatal(err)
+	fp := filepicker.New()
+	fp.AllowedTypes = []string{".mod", ".sum", ".go", ".txt", ".md"}
+	fp.CurrentDirectory, _ = os.UserHomeDir()
+
+	m := model{
+		filepicker: fp,
 	}
-}
-func initialModel() model {
-	ta := textarea.New()
-	vp := viewport.New(30, 10)
-	return model{
-		textarea:    ta,
-		files:       []string{},
-		viewport:    vp,
-		senderStyle: lipgloss.NewStyle().Foreground(lipgloss.Color("5")),
-		err:         nil,
-	}
-}
-func read_files(pattern string) string {
-	matches, err := filepath.Glob(pattern)
-	if err != nil {
-		log.Fatal(err)
-	}
-	var str string
-	for _, match := range matches {
-		str += match + "\n"
-	}
-	return str
+	tm, _ := tea.NewProgram(&m).Run()
+	mm := tm.(model)
+	fmt.Println("\n  You selected: " + m.filepicker.Styles.Selected.Render(mm.selectedFile) + "\n")
 }
