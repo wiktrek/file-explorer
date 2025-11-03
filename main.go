@@ -1,13 +1,10 @@
-/*
-I copied the code form here:
-https://github.com/charmbracelet/bubbletea/tree/main/examples/file-picker
-*/
 package main
 
 import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -38,7 +35,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc", "ctrl+q":
+		case "ctrl+esc", "ctrl+q", "ctrl+c":
 			m.quitting = true
 			return m, tea.Quit
 		}
@@ -54,7 +51,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	if didSelect, path := m.filepicker.DidSelectDisabledFile(msg); didSelect {
-		m.err = errors.New(path + " is not valid.")
+		m.err = errors.New(path + " is not supported. Contact me if you think It's an error: https://github.com/wiktrek/file-explorer")
 		m.selectedFile = ""
 		return m, tea.Batch(cmd, clearErrorAfter(2*time.Second))
 	}
@@ -74,14 +71,26 @@ func (m model) View() string {
 		s.WriteString("Pick a file:")
 	} else {
 		s.WriteString("Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile))
+
+		editor := os.Getenv("EDITOR")
+		if editor == "" {
+			editor = "vim"
+		}
+		cmd := exec.Command(editor, m.selectedFile)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-	s.WriteString("\n\n" + m.filepicker.View() + "\n")
+	s.WriteString("\n\n" + m.filepicker.View() + "\n" + "Quit using ctrl+q")
 	return s.String()
 }
 
 func main() {
 	fp := filepicker.New()
-	fp.AllowedTypes = []string{".*"}
+	fp.AllowedTypes = []string{".txt", ".go", ".js", ".ts"}
 	fp.CurrentDirectory, _ = os.UserHomeDir()
 
 	m := model{
