@@ -27,6 +27,26 @@ func clearErrorAfter(t time.Duration) tea.Cmd {
 	})
 }
 
+//	func deleteFile(f string) {
+//		err := os.Remove(f)
+//		fmt.Printf("DELETE FILEE")
+//		if err != nil {
+//			println(err)
+//		}
+//	}
+func openFile(f string) {
+	editor := os.Getenv("EDITOR")
+	if editor == "" {
+		editor = "vim"
+	}
+	cmd := exec.Command(editor, f)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
 func (m model) Init() tea.Cmd {
 	return m.filepicker.Init()
 }
@@ -36,9 +56,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+esc", "ctrl+q", "ctrl+c":
-			m.quitting = true
-			return m, tea.Quit
+			{
+				m.quitting = true
+				return m, tea.Quit
+			}
+		case "delete":
+			{
+				// if m.err != nil && path "" {
+				// deleteFile(path)
+				// }
+
+			}
 		}
+
 	case clearErrorMsg:
 		m.err = nil
 	}
@@ -49,7 +79,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
 		m.selectedFile = path
 	}
-
 	if didSelect, path := m.filepicker.DidSelectDisabledFile(msg); didSelect {
 		m.err = errors.New(path + " is not supported. Contact me if you think It's an error: https://github.com/wiktrek/file-explorer")
 		m.selectedFile = ""
@@ -71,18 +100,7 @@ func (m model) View() string {
 		s.WriteString("Pick a file:")
 	} else {
 		s.WriteString("Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile))
-
-		editor := os.Getenv("EDITOR")
-		if editor == "" {
-			editor = "vim"
-		}
-		cmd := exec.Command(editor, m.selectedFile)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		err := cmd.Run()
-		if err != nil {
-			fmt.Println(err)
-		}
+		openFile(m.selectedFile)
 	}
 	s.WriteString("\n\n" + m.filepicker.View() + "\n" + "Quit using ctrl+q")
 	return s.String()
@@ -90,9 +108,10 @@ func (m model) View() string {
 
 func main() {
 	fp := filepicker.New()
-	fp.AllowedTypes = []string{".txt", ".go", ".js", ".ts"}
+	fp.AllowedTypes = []string{".txt", ".go", ".js", ".ts", ".md", ".mod", ".sum", ".html", ".astro", ".cpp", ".c", ".css"}
 	fp.CurrentDirectory, _ = os.UserHomeDir()
-
+	fp.ShowPermissions = false
+	fp.ShowSize = false
 	m := model{
 		filepicker: fp,
 	}
