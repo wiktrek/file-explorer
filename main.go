@@ -1,121 +1,110 @@
 package main
 
 import (
-	"errors"
 	"fmt"
+	"log"
 	"os"
-	"os/exec"
-	"strings"
-	"time"
+	"path/filepath"
 
-	"github.com/charmbracelet/bubbles/filepicker"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type model struct {
-	filepicker   filepicker.Model
-	selectedFile string
-	quitting     bool
-	err          error
+	choices    []string
+	cursor     int
+	selected   map[int]struct{}
+	currentDir string
 }
 
-type clearErrorMsg struct{}
-
-func clearErrorAfter(t time.Duration) tea.Cmd {
-	return tea.Tick(t, func(_ time.Time) tea.Msg {
-		return clearErrorMsg{}
-	})
-}
-
-//	func deleteFile(f string) {
-//		err := os.Remove(f)
-//		fmt.Printf("DELETE FILEE")
-//		if err != nil {
-//			println(err)
-//		}
-//	}
-func openFile(f string) {
-	editor := os.Getenv("EDITOR")
-	if editor == "" {
-		editor = "vim"
-	}
-	cmd := exec.Command(editor, f)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+func loadFiles(dir string) []string {
+	pattern := "*"
+	matches, err := filepath.Glob(pattern)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
+	}
+	var files []string
+	for _, match := range matches {
+		files = append(files, match)
+	}
+	return files
+}
+func initialModel() model {
+	return model{
+		choices:  loadFiles("/home/wiktor/projects"),
+		selected: make(map[int]struct{}),
 	}
 }
 func (m model) Init() tea.Cmd {
-	return m.filepicker.Init()
+	// Just return `nil`, which means "no I/O right now, please."
+	return nil
 }
-
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+esc", "ctrl+q", "ctrl+c":
-			{
-				m.quitting = true
-				return m, tea.Quit
-			}
-		case "delete":
-			{
-				// if m.err != nil && path "" {
-				// deleteFile(path)
-				// }
 
+	// Is it a key press?
+	case tea.KeyMsg:
+
+		// Cool, what was the actual key pressed?
+		switch msg.String() {
+
+		// These keys should exit the program.
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		// The "up" and "k" keys move the cursor up
+		case "up", "k":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+
+		// The "down" and "j" keys move the cursor down
+		case "down", "j":
+			if m.cursor < len(m.choices)-1 {
+				m.cursor++
+			}
+
+		// The "enter" key and the spacebar (a literal space) toggle
+		// the selected state for the item that the cursor is pointing at.
+		case "enter", " ":
+			_, ok := m.selected[m.cursor]
+			if ok {
+				delete(m.selected, m.cursor)
+			} else {
+				m.selected[m.cursor] = struct{}{}
 			}
 		}
-
-	case clearErrorMsg:
-		m.err = nil
 	}
 
-	var cmd tea.Cmd
-	m.filepicker, cmd = m.filepicker.Update(msg)
-
-	if didSelect, path := m.filepicker.DidSelectFile(msg); didSelect {
-		m.selectedFile = path
-	}
-	if didSelect, path := m.filepicker.DidSelectDisabledFile(msg); didSelect {
-		m.err = errors.New(path + " is not supported. Contact me if you think It's an error: https://github.com/wiktrek/file-explorer")
-		m.selectedFile = ""
-		return m, tea.Batch(cmd, clearErrorAfter(2*time.Second))
-	}
-
-	return m, cmd
+	return m, nil
 }
-
 func (m model) View() string {
-	if m.quitting {
-		return ""
-	}
-	var s strings.Builder
-	s.WriteString("\n  ")
-	if m.err != nil {
-		s.WriteString(m.filepicker.Styles.DisabledFile.Render(m.err.Error()))
-	} else if m.selectedFile == "" {
-		s.WriteString("Pick a file:")
-	} else {
-		s.WriteString("Selected file: " + m.filepicker.Styles.Selected.Render(m.selectedFile))
-		openFile(m.selectedFile)
-	}
-	s.WriteString("\n\n" + m.filepicker.View() + "\n" + "Quit using ctrl+q")
-	return s.String()
-}
+	s := "Select File: \n\n"
 
-func main() {
-	fp := filepicker.New()
-	fp.AllowedTypes = []string{".txt", ".go", ".js", ".ts", ".md", ".mod", ".sum", ".html", ".astro", ".cpp", ".c", ".css"}
-	fp.CurrentDirectory, _ = os.UserHomeDir()
-	fp.ShowPermissions = false
-	fp.ShowSize = false
-	m := model{
-		filepicker: fp,
+	for i, choice := range m.choices {
+
+		cursor := " " // no cursor
+		if m.cursor == i {
+			cursor = ">" // cursor!
+		}
+
+		checked := " " // not selected
+		if _, ok := m.selected[i]; ok {
+			checked = "x" // selected!
+		}
+
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
 	}
-	tm, _ := tea.NewProgram(&m, tea.WithAltScreen()).Run()
-	mm := tm.(model)
-	fmt.Println("\n  You selected: " + m.filepicker.Styles.Selected.Render(mm.selectedFile) + "\n")
+
+	// The footer
+	s += "\nPress q to quit.\n"
+
+	// Send the UI for rendering
+	return s
+}
+func main() {
+	p := tea.NewProgram(initialModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
 }
