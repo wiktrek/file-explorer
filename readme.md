@@ -1,6 +1,6 @@
 
 - [x] read files
-- [ ] delete files
+- [x] delete files
 - [ ] modify files (open editor)
 - [ ] rename files
 - [ ] search files

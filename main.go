@@ -11,6 +11,25 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Keybind = struct {
+	keybind     string
+	description string
+}
+
+var keybinds = []Keybind{
+	{
+		keybind:     "q",
+		description: "quit",
+	},
+	{
+		keybind:     "o",
+		description: "open file",
+	}, {
+		keybind:     "d",
+		description: "delete file",
+	},
+}
+
 type ViewState string
 
 const (
@@ -27,13 +46,23 @@ type model struct {
 	viewState     ViewState
 }
 
-func reloadDir(m model, path string) {
+func initialModel() model {
+	return model{
+		currentDir: defaultDir,
+		files:      loadFiles(defaultDir),
+		selected:   make(map[int]struct{}),
+		viewState:  Default,
+	}
+}
+
+func reloadDir(m model, path string) model {
 	m.cursor = 0
-	if path == "" {
+	if path != "" {
 		m.currentDir = path
 	}
 	m.files = loadFiles(m.currentDir)
 	m.View()
+	return m
 }
 func deleteFile(path string) {
 	os.Remove(path)
@@ -87,15 +116,6 @@ func goUp(dir string) string {
 
 var defaultDir = "/home/wiktor/projects/golang/file-explorer/"
 
-func initialModel() model {
-	return model{
-		currentDir: defaultDir,
-		files:      loadFiles(defaultDir),
-		selected:   make(map[int]struct{}),
-		viewState:  Default,
-	}
-}
-
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
 	return nil
@@ -112,11 +132,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "up", "k":
 				if m.cursor > 0 {
 					m.cursor--
+				} else {
+					m.cursor = len(m.files) - 1
 				}
 
 			case "down", "j":
 				if m.cursor < len(m.files)-1 {
 					m.cursor++
+				} else {
+					m.cursor = 0
 				}
 			case "d":
 				m.viewState = ConfirmDelete
@@ -131,18 +155,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					fmt.Printf("%v", err)
 				}
 				if v {
-					reloadDir(m, pathToOpen+"/")
+					m = reloadDir(m, pathToOpen+"/")
 				} else {
 					// idk what to do for enter
 				}
 
 			case "esc":
 				d := goUp(m.currentDir)
-				reloadDir(m, d)
+				m = reloadDir(m, d)
 			}
 		} else {
 
 			switch msg.String() {
+			case "ctrl+c", "q":
+				return m, tea.Quit
+
 			case "left", "h":
 				if m.confirmCursor != 0 {
 					m.confirmCursor = 0
@@ -156,12 +183,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					deleteFile(m.currentDir + m.files[m.cursor])
 
 				}
+				m = reloadDir(m, "")
 				m.viewState = Default
 				m.View()
 			}
 		}
 	}
 	return m, nil
+}
+func showBinds() string {
+	s := ""
+
+	for k := range keybinds {
+		s += "\nPress " + keybinds[k].keybind + " to " + keybinds[k].description
+	}
+	return s
 }
 func defaultView(m model) string {
 	s := "Select File: \n\n"
@@ -174,17 +210,17 @@ func defaultView(m model) string {
 		}
 		s += fmt.Sprintf("%s %s\n", cursor, file)
 	}
-	s += "\nPress q to quit.\nPress o to open selected file\n"
+	s += showBinds()
 	return s
 }
 func confirmDeleteView(m model) string {
-	s := "Are you really sure you want to delete"
-	s += "\n" + m.currentDir + m.files[m.cursor] + "\n"
+	s := "Are you really sure you want to delete "
+	s += m.currentDir + m.files[m.cursor] + "\n"
 	if m.confirmCursor == 0 {
 		s += ">"
 	}
 	s += "YES"
-	s += "		"
+	s += "    "
 	if m.confirmCursor == 1 {
 		s += ">"
 	}
