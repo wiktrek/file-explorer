@@ -24,6 +24,7 @@ type ViewState string
 const (
 	Default       ViewState = "default"
 	ConfirmDelete ViewState = "confirm"
+	Rename        ViewState = "rename"
 )
 
 type model struct {
@@ -32,6 +33,7 @@ type model struct {
 	selected      map[int]struct{}
 	currentDir    string
 	confirmCursor int
+	temp_string   string
 	viewState     ViewState
 }
 

@@ -1,7 +1,8 @@
 
 - [x] read files
 - [x] delete files
-- [ ] modify files (open editor)
+- [x] modify files (open editor)
 - [ ] rename files
+- [ ] move files
 - [ ] search files
 - [ ] copy path
