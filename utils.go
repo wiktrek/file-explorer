@@ -9,7 +9,7 @@ func remove_at_index(str string, i int) string {
 	if i == len(str) {
 		return str[:i-1]
 	}
-	return str[:i] + str[(i+1):]
+	return str[:i-1] + str[(i):]
 }
 func add_to_string(str string, c byte, i int) string {
 	if i == len(str) {

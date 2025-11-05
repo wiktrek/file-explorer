@@ -83,7 +83,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.confirmCursor != 1 {
 						m.confirmCursor = 1
 					}
+
+				case "enter":
+					if m.confirmCursor == 0 {
+						deletePath(m.currentDir + m.files[m.cursor])
+
+					}
+					m = reloadDir(m, "")
+					m.viewState = Default
+					m.View()
 				}
+
 			}
 		case Rename:
 			{
@@ -101,11 +111,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.confirmCursor = 0
 					}
+				case "up", "k":
+					if m.cursor > 0 {
+						m.cursor--
+					} else {
+						m.cursor = len(m.files) - 1
+					}
+					m.temp_string = m.files[m.cursor]
+					if m.confirmCursor > len(m.temp_string) {
+						m.confirmCursor = len(m.temp_string)
+					}
+				case "down", "j":
+					if m.cursor < len(m.files)-1 {
+						m.cursor++
+					} else {
+						m.cursor = 0
+					}
+					m.temp_string = m.files[m.cursor]
+					if m.confirmCursor > len(m.temp_string) {
+						m.confirmCursor = len(m.temp_string)
+					}
 				case "backspace":
 					m.temp_string = remove_at_index(m.temp_string, m.confirmCursor)
 					if m.confirmCursor > 0 {
 						m.confirmCursor--
 					}
+				case "enter":
+					moveFile(m.currentDir+m.files[m.cursor], m.currentDir+m.temp_string)
+					t := m.cursor
+					reloadDir(m, "")
+					m.viewState = Default
+					m.View()
+					m.confirmCursor = 0
+					m.cursor = t
 				default:
 					if len(msg.String()) == 1 {
 						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.confirmCursor)

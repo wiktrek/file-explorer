@@ -9,6 +9,19 @@ import (
 	"strings"
 )
 
+func loadFiles(dir string) []string {
+	pattern := "*"
+	matches, err := filepath.Glob(dir + pattern)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var files []string
+	for _, match := range matches {
+		split := strings.Split(match, "/")
+		files = append(files, split[len(split)-1])
+	}
+	return files
+}
 func goUp(dir string) string {
 	if dir[len(dir)-1] == '/' {
 		dir = dir[:len(dir)-1]
@@ -31,10 +44,6 @@ func reloadDir(m model, path string) model {
 	m.View()
 	return m
 }
-func deleteFile(path string) {
-	os.Remove(path)
-
-}
 func IsDirectory(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
@@ -55,16 +64,12 @@ func openFile(f string) {
 		fmt.Println(err)
 	}
 }
-func loadFiles(dir string) []string {
-	pattern := "*"
-	matches, err := filepath.Glob(dir + pattern)
-	if err != nil {
-		log.Fatal(err)
+func deletePath(path string) {
+	if path == "/" {
+		return
 	}
-	var files []string
-	for _, match := range matches {
-		split := strings.Split(match, "/")
-		files = append(files, split[len(split)-1])
-	}
-	return files
+	os.Remove(path)
+}
+func moveFile(path string, path2 string) {
+	os.Rename(path, path2)
 }
