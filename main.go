@@ -101,6 +101,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.confirmCursor = 0
 					}
+				case "backspace":
+					m.temp_string = remove_at_index(m.temp_string, m.confirmCursor)
+					if m.confirmCursor > 0 {
+						m.confirmCursor--
+					}
+				default:
+					if len(msg.String()) == 1 {
+						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.confirmCursor)
+						m.confirmCursor++
+					}
 				}
 
 			}
