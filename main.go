@@ -7,6 +7,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+/*
+Idea for moving files:
+- move_view
+- temp_string as clipboard for now
+*/
 func initialModel() model {
 	return model{
 		currentDir: defaultDir,
@@ -46,14 +51,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case "d":
 					m.viewState = ConfirmDelete
-					m.confirmCursor = 1
+					m.secondCursor = 1
 				case "f2":
 					m.viewState = Rename
 					m.temp_string = m.files[m.cursor]
-					m.confirmCursor = len(m.temp_string)
-				case "o", " ":
+					m.secondCursor = len(m.temp_string)
+				case "o":
 					fileDir := m.currentDir + m.files[m.cursor]
 					openFile(fileDir)
+				case "m":
+					m.viewState = Move
+					m.temp_string = m.currentDir + m.files[m.cursor]
 				case "enter":
 					pathToOpen := m.currentDir + m.files[m.cursor]
 					v, err := IsDirectory(pathToOpen)
@@ -63,7 +71,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if v {
 						m = reloadDir(m, pathToOpen+"/")
 					} else {
-						// idk what to do for enter
+						fileDir := m.currentDir + m.files[m.cursor]
+						openFile(fileDir)
 					}
 
 				case "esc":
@@ -76,16 +85,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				switch msg.String() {
 				case "left", "h":
-					if m.confirmCursor != 0 {
-						m.confirmCursor = 0
+					if m.secondCursor != 0 {
+						m.secondCursor = 0
 					}
 				case "right", "l":
-					if m.confirmCursor != 1 {
-						m.confirmCursor = 1
+					if m.secondCursor != 1 {
+						m.secondCursor = 1
 					}
 
 				case "enter":
-					if m.confirmCursor == 0 {
+					if m.secondCursor == 0 {
 						deletePath(m.currentDir + m.files[m.cursor])
 
 					}
@@ -100,16 +109,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				switch msg.String() {
 				case "left", "h":
-					if m.confirmCursor > 0 {
-						m.confirmCursor--
+					if m.secondCursor > 0 {
+						m.secondCursor--
 					} else {
-						m.confirmCursor = len(m.temp_string)
+						m.secondCursor = len(m.temp_string)
 					}
 				case "right", "l":
-					if m.confirmCursor < len(m.temp_string) {
-						m.confirmCursor++
+					if m.secondCursor < len(m.temp_string) {
+						m.secondCursor++
 					} else {
-						m.confirmCursor = 0
+						m.secondCursor = 0
 					}
 				case "up", "k":
 					if m.cursor > 0 {
@@ -118,8 +127,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.cursor = len(m.files) - 1
 					}
 					m.temp_string = m.files[m.cursor]
-					if m.confirmCursor > len(m.temp_string) {
-						m.confirmCursor = len(m.temp_string)
+					if m.secondCursor > len(m.temp_string) {
+						m.secondCursor = len(m.temp_string)
 					}
 				case "down", "j":
 					if m.cursor < len(m.files)-1 {
@@ -128,13 +137,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.cursor = 0
 					}
 					m.temp_string = m.files[m.cursor]
-					if m.confirmCursor > len(m.temp_string) {
-						m.confirmCursor = len(m.temp_string)
+					if m.secondCursor > len(m.temp_string) {
+						m.secondCursor = len(m.temp_string)
 					}
 				case "backspace":
-					m.temp_string = remove_at_index(m.temp_string, m.confirmCursor)
-					if m.confirmCursor > 0 {
-						m.confirmCursor--
+					m.temp_string = remove_at_index(m.temp_string, m.secondCursor)
+					if m.secondCursor > 0 {
+						m.secondCursor--
 					}
 				case "enter":
 					moveFile(m.currentDir+m.files[m.cursor], m.currentDir+m.temp_string)
@@ -142,15 +151,39 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					reloadDir(m, "")
 					m.viewState = Default
 					m.View()
-					m.confirmCursor = 0
+					m.secondCursor = 0
 					m.cursor = t
+					m.temp_string = ""
 				default:
 					if len(msg.String()) == 1 {
-						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.confirmCursor)
-						m.confirmCursor++
+						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.secondCursor)
+						m.secondCursor++
 					}
 				}
+			}
+		case Move:
+			{
 
+				switch msg.String() {
+				case "up", "k":
+					if m.cursor > 0 {
+						m.cursor--
+					} else {
+						m.cursor = len(m.files) - 1
+					}
+
+				case "down", "j":
+					if m.cursor < len(m.files)-1 {
+						m.cursor++
+					} else {
+						m.cursor = 0
+					}
+				case "p":
+					m.viewState = Default
+				case "esc":
+					d := goUp(m.currentDir)
+					m = reloadDir(m, d)
+				}
 			}
 		}
 	}
@@ -165,6 +198,8 @@ func (m model) View() string {
 		return confirmDeleteView(m)
 	case Rename:
 		return renameView(m)
+	case Move:
+		return moveView(m)
 	}
 	return "Loading..."
 }

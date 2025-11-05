@@ -11,12 +11,12 @@ func renameView(m model) string {
 			//  handle renaming
 			s += "> "
 
-			if m.confirmCursor == len(m.temp_string) {
+			if m.secondCursor == len(m.temp_string) {
 				s += m.temp_string
 				s += "|"
 			} else {
 				for j := range m.temp_string {
-					if j == m.confirmCursor {
+					if j == m.secondCursor {
 						s += fmt.Sprintf("|%c", m.temp_string[j])
 					} else {
 						s += fmt.Sprintf("%c", m.temp_string[j])
