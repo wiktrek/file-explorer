@@ -60,10 +60,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "o":
 					fileDir := m.currentDir + m.files[m.cursor]
 					openFile(fileDir)
-				case "m":
+				case "ctrl+x", "m":
 					m.viewState = Move
 					m.temp_string = m.currentDir + m.files[m.cursor]
-				case "c":
+				case "ctrl+c":
 					m.viewState = Copy
 					m.temp_string = m.currentDir + m.files[m.cursor]
 				case "enter":
@@ -193,7 +193,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if v {
 						m = reloadDir(m, pathToOpen+"/")
 					}
-				case "m":
+				case "ctrl+v":
 					split := strings.Split(m.temp_string, "/")
 					file_name := split[len(split)-1]
 					err := moveFile(m.temp_string, m.currentDir+"/"+file_name)
@@ -224,7 +224,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = 0
 					}
-				case "p":
+				case "ctrl+v":
 					split := strings.Split(m.temp_string, "/")
 					file_name := split[len(split)-1]
 					_, err := copyFile(m.temp_string, m.currentDir+file_name)

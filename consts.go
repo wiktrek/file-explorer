@@ -23,8 +23,16 @@ var keybinds = []Keybind{
 		description: "rename file",
 	},
 	{
-		keybind:     "m",
+		keybind:     "ctrl+x/m",
 		description: "move file",
+	},
+	{
+		keybind:     "ctrl+c",
+		description: "copy file",
+	},
+	{
+		keybind:     "ctrl+v",
+		description: "paste file",
 	},
 }
 
