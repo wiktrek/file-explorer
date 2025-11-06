@@ -11,7 +11,7 @@ func defaultView(m model) string {
 		if m.cursor == i {
 			cursor = ">"
 		}
-		s += fmt.Sprintf("%s %s\n", cursor, file)
+		s += fmt.Sprintf("%s %s %s\n", cursor, file.fileType, file.path)
 	}
 	s += showBinds(m.keybinds)
 	return s

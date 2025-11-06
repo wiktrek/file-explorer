@@ -2,7 +2,7 @@ package main
 
 func confirmDeleteView(m model) string {
 	s := "Are you really sure you want to delete "
-	s += m.currentDir + m.files[m.cursor] + "\n"
+	s += m.currentDir + m.files[m.cursor].path + "\n"
 	if m.secondCursor == 0 {
 		s += ">"
 	}

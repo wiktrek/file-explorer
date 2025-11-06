@@ -13,7 +13,7 @@ func moveView(m model) string {
 		if m.cursor == i {
 			cursor = ">"
 		}
-		s += fmt.Sprintf("%s %s\n", cursor, file)
+		s += fmt.Sprintf("%s %s %s\n", cursor, file.fileType, file.path)
 	}
 	// split := strings.Split(m.temp_string, "/")
 	// file_name := split[len(split)-1]

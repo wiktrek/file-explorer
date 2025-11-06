@@ -26,16 +26,20 @@ func getConfig(configDir string) Config {
 	json.NewDecoder(bytes.NewBuffer(b)).Decode(&config)
 	return config
 }
-func loadFiles(dir string) []string {
+func loadFiles(dir string) []File {
 	pattern := "*"
 	matches, err := filepath.Glob(dir + pattern)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var files []string
+	var files []File
 	for _, match := range matches {
 		split := strings.Split(match, "/")
-		files = append(files, split[len(split)-1])
+		file_name := split[len(split)-1]
+		files = append(files, File{
+			path:     file_name,
+			fileType: getIcon(dir + file_name),
+		})
 	}
 	return files
 }

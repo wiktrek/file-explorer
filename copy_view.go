@@ -11,7 +11,7 @@ func copyView(m model) string {
 		if m.cursor == i {
 			cursor = ">"
 		}
-		s += fmt.Sprintf("%s %s\n", cursor, file)
+		s += fmt.Sprintf("%s %s %s\n", cursor, file.fileType, file.path)
 	}
 	s += fmt.Sprintf("Copying file: %s\n", m.temp_string)
 	s += showBinds(m.keybinds)

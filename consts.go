@@ -4,6 +4,10 @@ type Keybind = struct {
 	keybind     string
 	description string
 }
+type File = struct {
+	fileType string
+	path     string
+}
 
 var keybinds = []Keybind{
 	{
@@ -48,7 +52,7 @@ const (
 )
 
 type model struct {
-	files        []string
+	files        []File
 	cursor       int
 	selected     map[int]struct{}
 	currentDir   string

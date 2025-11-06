@@ -26,3 +26,14 @@ func showBinds(on bool) string {
 	}
 	return s
 }
+func getIcon(file string) string {
+	r, err := IsDirectory(file)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if r {
+		return "F"
+	} else {
+		return "P"
+	}
+}

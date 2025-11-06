@@ -7,7 +7,7 @@ func newView(m model) string {
 	s += m.currentDir + "\n"
 
 	for _, file := range m.files {
-		s += fmt.Sprintf("%s\n", file)
+		s += fmt.Sprintf("%s %s\n", file.fileType, file.path)
 	}
 	if m.secondCursor == len(m.temp_string) {
 		s += m.temp_string

@@ -25,7 +25,7 @@ func renameView(m model) string {
 			}
 			s += " <\n"
 		} else {
-			s += fmt.Sprintf("%s\n", file)
+			s += fmt.Sprintf("%s %s\n", file.fileType, file.path)
 		}
 	}
 	s += showBinds(m.keybinds)

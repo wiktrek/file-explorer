@@ -51,22 +51,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.secondCursor = 1
 				case "f2":
 					m.viewState = Rename
-					m.temp_string = m.files[m.cursor]
+					m.temp_string = m.files[m.cursor].path
 					m.secondCursor = len(m.temp_string)
 				case "o":
-					fileDir := m.currentDir + m.files[m.cursor]
+					fileDir := m.currentDir + m.files[m.cursor].path
 					openFile(fileDir)
 				case "ctrl+x", "m":
 					m.viewState = Move
-					m.temp_string = m.currentDir + m.files[m.cursor]
+					m.temp_string = m.currentDir + m.files[m.cursor].path
 				case "ctrl+c":
 					m.viewState = Copy
-					m.temp_string = m.currentDir + m.files[m.cursor]
+					m.temp_string = m.currentDir + m.files[m.cursor].path
 				case "ctrl+n":
 					m.viewState = New
 					m.temp_string = ""
 				case "enter":
-					pathToOpen := m.currentDir + m.files[m.cursor]
+					pathToOpen := m.currentDir + m.files[m.cursor].path
 					v, err := IsDirectory(pathToOpen)
 					if err != nil {
 						fmt.Printf("%v", err)
@@ -74,7 +74,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if v {
 						m = reloadDir(m, pathToOpen+"/")
 					} else {
-						fileDir := m.currentDir + m.files[m.cursor]
+						fileDir := m.currentDir + m.files[m.cursor].path
 						openFile(fileDir)
 					}
 
@@ -126,7 +126,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				case "enter":
 					if m.secondCursor == 0 {
-						deletePath(m.currentDir + m.files[m.cursor])
+						deletePath(m.currentDir + m.files[m.cursor].path)
 
 					}
 					m = reloadDir(m, "")
@@ -157,7 +157,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = len(m.files) - 1
 					}
-					m.temp_string = m.files[m.cursor]
+					m.temp_string = m.files[m.cursor].path
 					if m.secondCursor > len(m.temp_string) {
 						m.secondCursor = len(m.temp_string)
 					}
@@ -167,7 +167,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = 0
 					}
-					m.temp_string = m.files[m.cursor]
+					m.temp_string = m.files[m.cursor].path
 					if m.secondCursor > len(m.temp_string) {
 						m.secondCursor = len(m.temp_string)
 					}
@@ -177,7 +177,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.secondCursor--
 					}
 				case "enter":
-					moveFile(m.currentDir+m.files[m.cursor], m.currentDir+m.temp_string)
+					moveFile(m.currentDir+m.files[m.cursor].path, m.currentDir+m.temp_string)
 					t := m.cursor
 					reloadDir(m, "")
 					m.viewState = Default
@@ -212,7 +212,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "p":
 					m.viewState = Default
 				case "enter":
-					pathToOpen := m.currentDir + m.files[m.cursor]
+					pathToOpen := m.currentDir + m.files[m.cursor].path
 					v, err := IsDirectory(pathToOpen)
 					if err != nil {
 						fmt.Printf("%v", err)
@@ -264,7 +264,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.viewState = Default
 					reloadDir(m, "")
 				case "enter":
-					pathToOpen := m.currentDir + m.files[m.cursor]
+					pathToOpen := m.currentDir + m.files[m.cursor].path
 					v, err := IsDirectory(pathToOpen)
 					if err != nil {
 						fmt.Printf("%v", err)
