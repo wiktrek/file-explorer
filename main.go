@@ -26,7 +26,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// I don't want to add quitting to every View
-		if msg.String() == "ctrl+q" || msg.String() == "q" {
+		if msg.String() == "ctrl+q" {
 			return m, tea.Quit
 		}
 		switch m.viewState {
