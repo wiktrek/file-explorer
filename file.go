@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +11,19 @@ import (
 	"strings"
 )
 
+type Config struct {
+	DefaultPath string
+}
+
+func getConfig(configDir string) Config {
+	var config Config
+	b, err := os.ReadFile(configDir)
+	if err != nil {
+		fmt.Println(err)
+	}
+	json.NewDecoder(bytes.NewBuffer(b)).Decode(&config)
+	return config
+}
 func loadFiles(dir string) []string {
 	pattern := "*"
 	matches, err := filepath.Glob(dir + pattern)
@@ -70,6 +85,10 @@ func deletePath(path string) {
 	}
 	os.Remove(path)
 }
-func moveFile(path string, path2 string) {
-	os.Rename(path, path2)
+func moveFile(path string, path2 string) error {
+	err := os.Rename(path, path2)
+	return err
+}
+func createFile(path string) {
+	os.Create(path)
 }

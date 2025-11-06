@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func moveView(m model) string {
 	s := "Select File: \n\n"
@@ -13,8 +16,12 @@ func moveView(m model) string {
 		}
 		s += fmt.Sprintf("%s %s\n", cursor, file)
 	}
+	split := strings.Split(m.temp_string, "/")
+	file_name := split[len(split)-1]
+	s += " _" + file_name + "\n"
 	s += "Moving "
 	s += m.temp_string
+	s += "\nPress p to switch do default"
 	s += showBinds()
 	return s
 }

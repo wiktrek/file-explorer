@@ -47,4 +47,4 @@ type model struct {
 	viewState    ViewState
 }
 
-var defaultDir = "/home/wiktor/projects/golang/file-explorer/"
+var defaultDir = getConfig("config.json").DefaultPath

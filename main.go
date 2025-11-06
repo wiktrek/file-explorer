@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -180,6 +181,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case "p":
 					m.viewState = Default
+				case "enter":
+					pathToOpen := m.currentDir + m.files[m.cursor]
+					v, err := IsDirectory(pathToOpen)
+					if err != nil {
+						fmt.Printf("%v", err)
+					}
+					if v {
+						m = reloadDir(m, pathToOpen+"/")
+					}
+				case "m":
+					split := strings.Split(m.temp_string, "/")
+					file_name := split[len(split)-1]
+					err := moveFile(m.temp_string, m.currentDir+"/"+file_name)
+					if err != nil {
+						fmt.Println(err)
+					} else {
+						m.viewState = Default
+						defer reloadDir(m, "")
+					}
+
 				case "esc":
 					d := goUp(m.currentDir)
 					m = reloadDir(m, d)
