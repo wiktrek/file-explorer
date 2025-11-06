@@ -20,6 +20,6 @@ func moveView(m model) string {
 	// s += " _" + file_name + "\n"
 	s += "Moving " + m.temp_string
 	s += "\nPress p to switch do default"
-	s += showBinds()
+	s += showBinds(m.keybinds)
 	return s
 }

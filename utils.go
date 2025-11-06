@@ -17,3 +17,12 @@ func add_to_string(str string, c byte, i int) string {
 	}
 	return fmt.Sprintf("%s%c%s", str[:i], c, str[i:])
 }
+func showBinds(on bool) string {
+	s := ""
+	if on {
+		for k := range keybinds {
+			s += "\nPress " + keybinds[k].keybind + " to " + keybinds[k].description
+		}
+	}
+	return s
+}

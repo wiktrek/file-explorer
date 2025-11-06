@@ -28,6 +28,6 @@ func renameView(m model) string {
 			s += fmt.Sprintf("%s\n", file)
 		}
 	}
-	s += showBinds()
+	s += showBinds(m.keybinds)
 	return s
 }

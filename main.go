@@ -8,16 +8,12 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-/*
-Idea for moving files:
-- move_view
-- temp_string as clipboard for now
-*/
 func initialModel() model {
 	return model{
-		currentDir: defaultDir,
-		files:      loadFiles(defaultDir),
+		currentDir: config.DefaultPath,
+		files:      loadFiles(config.DefaultPath),
 		selected:   make(map[int]struct{}),
+		keybinds:   config.keybinds,
 		viewState:  Default,
 	}
 }

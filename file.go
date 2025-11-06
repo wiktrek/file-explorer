@@ -14,6 +14,7 @@ import (
 
 type Config struct {
 	DefaultPath string
+	keybinds    bool
 }
 
 func getConfig(configDir string) Config {

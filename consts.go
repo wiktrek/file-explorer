@@ -53,7 +53,8 @@ type model struct {
 	currentDir   string
 	secondCursor int
 	temp_string  string
+	keybinds     bool
 	viewState    ViewState
 }
 
-var defaultDir = getConfig("config.json").DefaultPath
+var config = getConfig("config.json")
