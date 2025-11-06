@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func renameView(m model) string {
-	s := "Rename Your files"
+	s := "Rename Your files: "
 	s += m.currentDir + "\n"
 
 	for i, file := range m.files {

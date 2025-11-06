@@ -44,6 +44,7 @@ const (
 	Rename        ViewState = "rename"
 	Move          ViewState = "move"
 	Copy          ViewState = "copy"
+	New           ViewState = "New"
 )
 
 type model struct {

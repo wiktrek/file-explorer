@@ -26,7 +26,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// I don't want to add quitting to every View
-		if msg.String() == "ctrl+c" || msg.String() == "q" {
+		if msg.String() == "ctrl+q" || msg.String() == "q" {
 			return m, tea.Quit
 		}
 		switch m.viewState {
@@ -62,6 +62,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "ctrl+c":
 					m.viewState = Copy
 					m.temp_string = m.currentDir + m.files[m.cursor]
+				case "ctrl+n":
+					m.viewState = New
+					m.temp_string = ""
 				case "enter":
 					pathToOpen := m.currentDir + m.files[m.cursor]
 					v, err := IsDirectory(pathToOpen)
@@ -78,6 +81,34 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "esc":
 					d := goUp(m.currentDir)
 					m = reloadDir(m, d)
+				}
+			}
+		case New:
+			{
+				switch msg.String() {
+				case "left", "h":
+					if m.secondCursor != 0 {
+						m.secondCursor = 0
+					}
+				case "right", "l":
+					if m.secondCursor != 1 {
+						m.secondCursor = 1
+					}
+				case "backspace":
+					m.temp_string = remove_at_index(m.temp_string, m.secondCursor)
+					if m.secondCursor > 0 {
+						m.secondCursor--
+					}
+				case "enter":
+					createFile(m.currentDir + m.temp_string)
+					m = reloadDir(m, "")
+					m.viewState = Default
+					m.View()
+				default:
+					if len(msg.String()) == 1 {
+						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.secondCursor)
+						m.secondCursor++
+					}
 				}
 			}
 		case ConfirmDelete:
@@ -198,6 +229,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.viewState = Default
 					}
+					m.temp_string = ""
+					m.viewState = Default
 					reloadDir(m, m.currentDir)
 				case "esc":
 					d := goUp(m.currentDir)
@@ -229,6 +262,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.temp_string = ""
 					m.viewState = Default
+					reloadDir(m, "")
 				case "enter":
 					pathToOpen := m.currentDir + m.files[m.cursor]
 					v, err := IsDirectory(pathToOpen)
@@ -260,6 +294,8 @@ func (m model) View() string {
 		return moveView(m)
 	case Copy:
 		return copyView(m)
+	case New:
+		return newView(m)
 	}
 	return "Loading..."
 }
