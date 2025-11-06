@@ -63,6 +63,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "m":
 					m.viewState = Move
 					m.temp_string = m.currentDir + m.files[m.cursor]
+				case "c":
+					m.viewState = Copy
+					m.temp_string = m.currentDir + m.files[m.cursor]
 				case "enter":
 					pathToOpen := m.currentDir + m.files[m.cursor]
 					v, err := IsDirectory(pathToOpen)
@@ -198,9 +201,47 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						fmt.Println(err)
 					} else {
 						m.viewState = Default
-						defer reloadDir(m, "")
+					}
+					reloadDir(m, m.currentDir)
+				case "esc":
+					d := goUp(m.currentDir)
+					m = reloadDir(m, d)
+				}
+			}
+		case Copy:
+			{
+				switch msg.String() {
+				case "up", "k":
+					if m.cursor > 0 {
+						m.cursor--
+					} else {
+						m.cursor = len(m.files) - 1
 					}
 
+				case "down", "j":
+					if m.cursor < len(m.files)-1 {
+						m.cursor++
+					} else {
+						m.cursor = 0
+					}
+				case "p":
+					split := strings.Split(m.temp_string, "/")
+					file_name := split[len(split)-1]
+					_, err := copyFile(m.temp_string, m.currentDir+file_name)
+					if err != nil {
+						fmt.Println(err)
+					}
+					m.temp_string = ""
+					m.viewState = Default
+				case "enter":
+					pathToOpen := m.currentDir + m.files[m.cursor]
+					v, err := IsDirectory(pathToOpen)
+					if err != nil {
+						fmt.Printf("%v", err)
+					}
+					if v {
+						m = reloadDir(m, pathToOpen+"/")
+					}
 				case "esc":
 					d := goUp(m.currentDir)
 					m = reloadDir(m, d)
@@ -221,6 +262,8 @@ func (m model) View() string {
 		return renameView(m)
 	case Move:
 		return moveView(m)
+	case Copy:
+		return copyView(m)
 	}
 	return "Loading..."
 }

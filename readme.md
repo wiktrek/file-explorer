@@ -3,9 +3,9 @@
 - [x] delete files
 - [x] modify files (open editor)
 - [x] rename files
-- [ ] move files
+- [x] move files
+- [x] clipboard
 - [ ] copy files
-- [ ] clipboard ( so that i can move files)
 - [ ] search files
 - [ ] editor inside file-explorer
 - [ ] copy path

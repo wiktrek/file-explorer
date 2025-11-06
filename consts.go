@@ -35,6 +35,7 @@ const (
 	ConfirmDelete ViewState = "confirm"
 	Rename        ViewState = "rename"
 	Move          ViewState = "move"
+	Copy          ViewState = "copy"
 )
 
 type model struct {
