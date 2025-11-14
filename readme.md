@@ -11,3 +11,6 @@
 - [ ] editor inside file-explorer
 - [ ] copy path
 
+# Installation
+## For now you need to clone the repository and run it yourself using
+`go run .`

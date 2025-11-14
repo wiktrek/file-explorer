@@ -11,7 +11,7 @@ type File = struct {
 
 var keybinds = []Keybind{
 	{
-		keybind:     "ctrl+q",
+		keybind:     "ctrl+q/q",
 		description: "quit",
 	},
 	{
@@ -19,7 +19,7 @@ var keybinds = []Keybind{
 		description: "open file",
 	},
 	{
-		keybind:     "d",
+		keybind:     "d/delete",
 		description: "delete file",
 	},
 	{
