@@ -4,8 +4,9 @@ import "fmt"
 
 func copyView(m model) string {
 	s := "Select File: \n\n"
-	s += m.currentDir + "\n"
-
+	if !m.config.hidePath {
+		s += m.currentDir + "\n"
+	}
 	for i, file := range m.files {
 		cursor := " "
 		if m.cursor == i {
@@ -14,6 +15,6 @@ func copyView(m model) string {
 		s += fmt.Sprintf("%s %s %s\n", cursor, file.fileType, file.path)
 	}
 	s += fmt.Sprintf("Copying file: %s\n", m.temp_string)
-	s += showBinds(m.keybinds)
+	s += showBinds(m.config.keybinds)
 	return s
 }

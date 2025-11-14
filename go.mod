@@ -1,4 +1,4 @@
-module github.com/charmbracelet/bubbletea-app-template
+module github.com/wiktrek/file_explorer
 
 go 1.24.0
 

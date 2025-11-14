@@ -1,4 +1,4 @@
-
+# What I want to add in the future:
 - [x] read files
 - [x] delete files
 - [x] modify files (open editor)
@@ -9,3 +9,4 @@
 - [ ] search files
 - [ ] editor inside file-explorer
 - [ ] copy path
+

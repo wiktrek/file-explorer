@@ -62,7 +62,7 @@ type model struct {
 	currentDir   string
 	secondCursor int
 	temp_string  string
-	keybinds     bool
+	config       Config
 	viewState    ViewState
 }
 

@@ -4,7 +4,9 @@ import "fmt"
 
 func renameView(m model) string {
 	s := "Rename Your files: "
-	s += m.currentDir + "\n"
+	if !m.config.hidePath {
+		s += m.currentDir + "\n"
+	}
 
 	for i, file := range m.files {
 		if m.cursor == i {
@@ -28,6 +30,6 @@ func renameView(m model) string {
 			s += fmt.Sprintf("%s %s\n", file.fileType, file.path)
 		}
 	}
-	s += showBinds(m.keybinds)
+	s += showBinds(m.config.keybinds)
 	return s
 }

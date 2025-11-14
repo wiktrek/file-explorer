@@ -6,7 +6,9 @@ import (
 
 func moveView(m model) string {
 	s := "Select File: \n\n"
-	s += m.currentDir + "\n"
+	if !m.config.hidePath {
+		s += m.currentDir + "\n"
+	}
 
 	for i, file := range m.files {
 		cursor := " "
@@ -20,6 +22,6 @@ func moveView(m model) string {
 	// s += " _" + file_name + "\n"
 	s += "Moving " + m.temp_string
 	s += "\nPress p to switch do default"
-	s += showBinds(m.keybinds)
+	s += showBinds(m.config.keybinds)
 	return s
 }

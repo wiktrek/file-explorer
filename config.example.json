@@ -1,4 +1,5 @@
 {
     "DefaultPath":  "/home/",
-    "keybinds": true
+    "HidePath": true,
+    "Keybinds": true
 }

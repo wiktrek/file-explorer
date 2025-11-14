@@ -3,8 +3,10 @@ package main
 import "fmt"
 
 func newView(m model) string {
-	s := "Create new file: "
-	s += m.currentDir + "\n"
+	s := "Create new file: \n"
+	if !m.config.hidePath {
+		s += m.currentDir + "\n"
+	}
 
 	for _, file := range m.files {
 		s += fmt.Sprintf("%s %s\n", file.fileType, file.path)
@@ -22,6 +24,6 @@ func newView(m model) string {
 		}
 	}
 	s += "\n"
-	s += showBinds(m.keybinds)
+	s += showBinds(m.config.keybinds)
 	return s
 }
