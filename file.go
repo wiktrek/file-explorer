@@ -12,19 +12,33 @@ import (
 	"strings"
 )
 
-type Config struct {
+type JsonConfig struct {
 	DefaultPath string
+	HidePath    bool
+	Keybinds    bool
+}
+type Config struct {
+	defaultPath string
+	hidePath    bool
 	keybinds    bool
 }
 
 func getConfig(configDir string) Config {
-	var config Config
+	var config JsonConfig
 	b, err := os.ReadFile(configDir)
 	if err != nil {
 		fmt.Println(err)
 	}
 	json.NewDecoder(bytes.NewBuffer(b)).Decode(&config)
-	return config
+	if !pathExits(config.DefaultPath) {
+		config.DefaultPath = "/home/"
+	}
+	// I hate the uppercase naming ( I will probably change this later)
+	return Config{
+		defaultPath: config.DefaultPath,
+		hidePath:    config.HidePath,
+		keybinds:    config.Keybinds,
+	}
 }
 func loadFiles(dir string) []File {
 	pattern := "*"
@@ -44,6 +58,7 @@ func loadFiles(dir string) []File {
 	return files
 }
 func goUp(dir string) string {
+
 	if dir[len(dir)-1] == '/' {
 		dir = dir[:len(dir)-1]
 	}
@@ -84,6 +99,10 @@ func openFile(f string) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+func pathExits(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 func deletePath(path string) {
 	if path == "/" {

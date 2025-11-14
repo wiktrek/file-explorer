@@ -10,23 +10,22 @@ import (
 
 func initialModel() model {
 	return model{
-		currentDir: config.DefaultPath,
-		files:      loadFiles(config.DefaultPath),
+		currentDir: config.defaultPath,
+		files:      loadFiles(config.defaultPath),
 		selected:   make(map[int]struct{}),
-		keybinds:   config.keybinds,
+		config:     config,
 		viewState:  Default,
 	}
 }
 
 func (m model) Init() tea.Cmd {
-	// Just return `nil`, which means "no I/O right now, please."
 	return nil
 }
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// I don't want to add quitting to every View
-		if msg.String() == "ctrl+q" {
+		if msg.String() == "ctrl+q" || msg.String() == "q" {
 			return m, tea.Quit
 		}
 		switch m.viewState {
@@ -86,11 +85,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case New:
 			{
 				switch msg.String() {
-				case "left", "h":
+				case "left":
 					if m.secondCursor != 0 {
 						m.secondCursor = 0
 					}
-				case "right", "l":
+				case "right":
 					if m.secondCursor != 1 {
 						m.secondCursor = 1
 					}
@@ -139,13 +138,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			{
 
 				switch msg.String() {
-				case "left", "h":
+				case "left":
 					if m.secondCursor > 0 {
 						m.secondCursor--
 					} else {
 						m.secondCursor = len(m.temp_string)
 					}
-				case "right", "l":
+				case "right":
 					if m.secondCursor < len(m.temp_string) {
 						m.secondCursor++
 					} else {
@@ -181,10 +180,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					t := m.cursor
 					reloadDir(m, "")
 					m.viewState = Default
-					m.View()
 					m.secondCursor = 0
 					m.cursor = t
 					m.temp_string = ""
+					m.View()
 				default:
 					if len(msg.String()) == 1 {
 						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.secondCursor)
