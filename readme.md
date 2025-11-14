@@ -5,6 +5,7 @@
 - [x] rename files
 - [x] move files
 - [x] clipboard
+- [x] icons
 - [ ] copy files
 - [ ] search files
 - [ ] editor inside file-explorer

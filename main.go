@@ -45,7 +45,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = 0
 					}
-				case "d":
+				case "d", "delete":
 					m.viewState = ConfirmDelete
 					m.secondCursor = 1
 				case "f2":
@@ -100,6 +100,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				case "enter":
 					createFile(m.currentDir + m.temp_string)
+					t := m.cursor
+					m.secondCursor = 0
+					m.cursor = t
+					m.temp_string = ""
 					m = reloadDir(m, "")
 					m.viewState = Default
 					m.View()
@@ -178,7 +182,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case "enter":
 					moveFile(m.currentDir+m.files[m.cursor].path, m.currentDir+m.temp_string)
 					t := m.cursor
-					reloadDir(m, "")
+					m = reloadDir(m, "")
 					m.viewState = Default
 					m.secondCursor = 0
 					m.cursor = t
