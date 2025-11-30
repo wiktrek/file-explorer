@@ -14,6 +14,7 @@ func initialModel() model {
 		files:      loadFiles(config.defaultPath),
 		selected:   make(map[int]struct{}),
 		config:     config,
+		searching:  false,
 		viewState:  Default,
 	}
 }
@@ -25,61 +26,103 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		// I don't want to add quitting to every View
-		if msg.String() == "ctrl+q" || msg.String() == "q" {
+		if msg.String() == "ctrl+q" || msg.String() == "q" || msg.String() == "ctrl+w" {
 			return m, tea.Quit
 		}
 		switch m.viewState {
 		case Default:
 			{
-				switch msg.String() {
-				case "up", "k":
-					if m.cursor > 0 {
-						m.cursor--
-					} else {
-						m.cursor = len(m.files) - 1
+				if m.searching {
+					switch msg.String() {
+					case "esc":
+						m.searching = false
+						m.search = ""
+					case "enter":
+						m.searching = false
+					case "up":
+						if m.cursor > 0 {
+							m.cursor--
+						} else {
+							m.cursor = len(m.files) - 1
+						}
+					case "down":
+						if m.cursor < len(m.files)-1 {
+							m.cursor++
+						} else {
+							m.cursor = 0
+						}
+					case "left":
+						if m.secondCursor != 0 {
+							m.secondCursor = 0
+						}
+					case "right":
+						if m.secondCursor != 1 {
+							m.secondCursor = 1
+						}
+					case "backspace":
+						m.search = remove_at_index(m.search, m.secondCursor)
+						if m.secondCursor > 0 {
+							m.secondCursor--
+						}
+					default:
+						if len(msg.String()) == 1 {
+							m.search = add_to_string(m.search, msg.String()[0], m.secondCursor)
+							m.secondCursor++
+						}
 					}
+				} else {
+					switch msg.String() {
+					case "up", "k":
+						if m.cursor > 0 {
+							m.cursor--
+						} else {
+							m.cursor = len(m.files) - 1
+						}
 
-				case "down", "j":
-					if m.cursor < len(m.files)-1 {
-						m.cursor++
-					} else {
-						m.cursor = 0
-					}
-				case "d", "delete":
-					m.viewState = ConfirmDelete
-					m.secondCursor = 1
-				case "f2":
-					m.viewState = Rename
-					m.temp_string = m.files[m.cursor].path
-					m.secondCursor = len(m.temp_string)
-				case "o":
-					fileDir := m.currentDir + m.files[m.cursor].path
-					openFile(fileDir)
-				case "ctrl+x", "m":
-					m.viewState = Move
-					m.temp_string = m.currentDir + m.files[m.cursor].path
-				case "ctrl+c":
-					m.viewState = Copy
-					m.temp_string = m.currentDir + m.files[m.cursor].path
-				case "ctrl+n":
-					m.viewState = New
-					m.temp_string = ""
-				case "enter":
-					pathToOpen := m.currentDir + m.files[m.cursor].path
-					v, err := IsDirectory(pathToOpen)
-					if err != nil {
-						fmt.Printf("%v", err)
-					}
-					if v {
-						m = reloadDir(m, pathToOpen+"/")
-					} else {
+					case "down", "j":
+						if m.cursor < len(m.files)-1 {
+							m.cursor++
+						} else {
+							m.cursor = 0
+						}
+					case "d", "delete":
+						m.viewState = ConfirmDelete
+						m.secondCursor = 1
+					case "f2":
+						m.viewState = Rename
+						m.temp_string = m.files[m.cursor].path
+						m.secondCursor = len(m.temp_string)
+					case "o":
 						fileDir := m.currentDir + m.files[m.cursor].path
 						openFile(fileDir)
+					case "ctrl+x", "m":
+						m.viewState = Move
+						m.temp_string = m.currentDir + m.files[m.cursor].path
+					case "ctrl+c":
+						m.viewState = Copy
+						m.temp_string = m.currentDir + m.files[m.cursor].path
+					case "ctrl+n":
+						m.viewState = New
+						m.temp_string = ""
+					case "enter":
+						pathToOpen := m.currentDir + m.files[m.cursor].path
+						v, err := IsDirectory(pathToOpen)
+						if err != nil {
+							fmt.Printf("%v", err)
+						}
+						if v {
+							m = reloadDir(m, pathToOpen+"/")
+						} else {
+							fileDir := m.currentDir + m.files[m.cursor].path
+							openFile(fileDir)
+						}
+					case "/":
+						m.searching = true
+					case "esc":
+						m.search = ""
+						d := goUp(m.currentDir)
+						m = reloadDir(m, d)
 					}
-
-				case "esc":
-					d := goUp(m.currentDir)
-					m = reloadDir(m, d)
 				}
 			}
 		case New:

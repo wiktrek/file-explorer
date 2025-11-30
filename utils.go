@@ -29,6 +29,10 @@ func showBinds(on bool) string {
 	}
 	return s
 }
+func search_filter(files []File) []File {
+	filtered_files := files
+	return filtered_files
+}
 func getIcon(file string) string {
 	r, err := IsDirectory(file)
 	if err != nil {

@@ -62,6 +62,8 @@ type model struct {
 	currentDir   string
 	secondCursor int
 	temp_string  string
+	search       string
+	searching    bool
 	config       Config
 	viewState    ViewState
 }
