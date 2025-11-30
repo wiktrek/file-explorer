@@ -1,3 +1,4 @@
+![](./assets/default.png)
 # What I want to add in the future:
 - [x] read files
 - [x] delete files
@@ -13,4 +14,6 @@
 
 # Installation
 ## For now you need to clone the repository and run it yourself using
-`go run .`
+```bash
+go run .
+```
