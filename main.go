@@ -64,10 +64,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						if m.secondCursor > 0 {
 							m.secondCursor--
 						}
+						m = reloadDir(m, m.currentDir)
 					default:
 						if len(msg.String()) == 1 {
 							m.search = add_to_string(m.search, msg.String()[0], m.secondCursor)
 							m.secondCursor++
+							m = reloadDir(m, m.currentDir)
 						}
 					}
 				} else {

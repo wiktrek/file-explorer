@@ -76,7 +76,7 @@ func reloadDir(m model, path string) model {
 	if path != "" {
 		m.currentDir = path
 	}
-	m.files = loadFiles(m.currentDir)
+	m.files = search_filter(loadFiles(m.currentDir), m.search)
 	m.View()
 	return m
 }

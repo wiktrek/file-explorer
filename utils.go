@@ -29,8 +29,13 @@ func showBinds(on bool) string {
 	}
 	return s
 }
-func search_filter(files []File) []File {
-	filtered_files := files
+func search_filter(files []File, search string) []File {
+	var filtered_files []File
+	for i := range files {
+		if strings.Contains(files[i].path, search) {
+			filtered_files = append(filtered_files, files[i])
+		}
+	}
 	return filtered_files
 }
 func getIcon(file string) string {
