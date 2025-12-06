@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func previewView(m model) string {
 	var s string
@@ -10,15 +13,27 @@ func previewView(m model) string {
 		fmt.Printf("%v", err)
 		return ""
 	}
+
+	s += m.files[m.cursor].path + ":\n\n"
 	if o {
-		s += "dir"
-		files := loadFiles(path)
-		for _, file := range files {
+		files := loadFiles(path + "/")
+		for i, file := range files {
+			if i >= m.height-10 {
+				s += "..."
+				break
+			}
 			s += fmt.Sprintf("%s %s\n", file.fileType, file.path)
 		}
 	} else {
-		s += "file"
-		s += readFile(path)
+
+		lines := strings.Split(readFile(path), "\n")
+		for i, line := range lines {
+			if i >= m.height-20 {
+				s += "..."
+				break
+			}
+			s += line + "\n"
+		}
 	}
 	// s += readFile(m.currentDir + m.files[m.cursor].path)
 	return s

@@ -24,3 +24,4 @@ go run .
 - When searching explorer can crash
 - When view isn't default searching breaks almost everything
 - cursor value doesn't change while searching which can cause crashes 
+- when previewing files contents of files merge in the preview
