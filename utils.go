@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"strings"
 )
 
@@ -19,6 +21,13 @@ func add_to_string(str string, c byte, i int) string {
 		return fmt.Sprintf("%s%c", str, c)
 	}
 	return fmt.Sprintf("%s%c%s", str[:i], c, str[i:])
+}
+func readFile(dir string) string {
+	data, err := os.ReadFile(dir)
+	if err != nil {
+		log.Fatalf("failed to read file: %s", err)
+	}
+	return string(data)
 }
 func showBinds(on bool) string {
 	s := ""

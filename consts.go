@@ -61,11 +61,13 @@ type model struct {
 	selected     map[int]struct{}
 	currentDir   string
 	secondCursor int
-	temp_string  string
+	tempString   string
 	search       string
 	searching    bool
 	config       Config
 	viewState    ViewState
+	height       int
+	width        int
 }
 
 var config = getConfig("config.json")

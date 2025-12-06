@@ -17,11 +17,10 @@ func moveView(m model) string {
 		}
 		s += fmt.Sprintf("%s %s %s\n", cursor, file.fileType, file.path)
 	}
-	// split := strings.Split(m.temp_string, "/")
+	// split := strings.Split(m.tempString, "/")
 	// file_name := split[len(split)-1]
 	// s += " _" + file_name + "\n"
-	s += "Moving " + m.temp_string
+	s += "Moving " + m.tempString
 	s += "\nPress p to switch do default"
-	s += showBinds(m.config.keybinds)
 	return s
 }

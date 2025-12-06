@@ -4,5 +4,6 @@
         "charmbracelet",
         "filepicker",
         "lipgloss"
-    ]
+    ],
+    "discord.enabled": true
 }

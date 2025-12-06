@@ -6,9 +6,10 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
-func initialModel() model {
+func initialmodel() model {
 	return model{
 		currentDir: config.defaultPath,
 		files:      loadFiles(config.defaultPath),
@@ -20,7 +21,7 @@ func initialModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return tea.SetWindowTitle("File explorer")
 }
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -92,20 +93,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.secondCursor = 1
 					case "f2":
 						m.viewState = Rename
-						m.temp_string = m.files[m.cursor].path
-						m.secondCursor = len(m.temp_string)
+						m.tempString = m.files[m.cursor].path
+						m.secondCursor = len(m.tempString)
 					case "o":
 						fileDir := m.currentDir + m.files[m.cursor].path
 						openFile(fileDir)
 					case "ctrl+x", "m":
 						m.viewState = Move
-						m.temp_string = m.currentDir + m.files[m.cursor].path
+						m.tempString = m.currentDir + m.files[m.cursor].path
 					case "ctrl+c":
 						m.viewState = Copy
-						m.temp_string = m.currentDir + m.files[m.cursor].path
+						m.tempString = m.currentDir + m.files[m.cursor].path
 					case "ctrl+n":
 						m.viewState = New
-						m.temp_string = ""
+						m.tempString = ""
 					case "enter":
 						pathToOpen := m.currentDir + m.files[m.cursor].path
 						v, err := IsDirectory(pathToOpen)
@@ -139,22 +140,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.secondCursor = 1
 					}
 				case "backspace":
-					m.temp_string = remove_at_index(m.temp_string, m.secondCursor)
+					m.tempString = remove_at_index(m.tempString, m.secondCursor)
 					if m.secondCursor > 0 {
 						m.secondCursor--
 					}
 				case "enter":
-					createFile(m.currentDir + m.temp_string)
+					createFile(m.currentDir + m.tempString)
 					t := m.cursor
 					m.secondCursor = 0
 					m.cursor = t
-					m.temp_string = ""
+					m.tempString = ""
 					m = reloadDir(m, "")
 					m.viewState = Default
 					m.View()
 				default:
 					if len(msg.String()) == 1 {
-						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.secondCursor)
+						m.tempString = add_to_string(m.tempString, msg.String()[0], m.secondCursor)
 						m.secondCursor++
 					}
 				}
@@ -191,10 +192,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if m.secondCursor > 0 {
 						m.secondCursor--
 					} else {
-						m.secondCursor = len(m.temp_string)
+						m.secondCursor = len(m.tempString)
 					}
 				case "right":
-					if m.secondCursor < len(m.temp_string) {
+					if m.secondCursor < len(m.tempString) {
 						m.secondCursor++
 					} else {
 						m.secondCursor = 0
@@ -205,9 +206,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = len(m.files) - 1
 					}
-					m.temp_string = m.files[m.cursor].path
-					if m.secondCursor > len(m.temp_string) {
-						m.secondCursor = len(m.temp_string)
+					m.tempString = m.files[m.cursor].path
+					if m.secondCursor > len(m.tempString) {
+						m.secondCursor = len(m.tempString)
 					}
 				case "down", "j":
 					if m.cursor < len(m.files)-1 {
@@ -215,27 +216,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.cursor = 0
 					}
-					m.temp_string = m.files[m.cursor].path
-					if m.secondCursor > len(m.temp_string) {
-						m.secondCursor = len(m.temp_string)
+					m.tempString = m.files[m.cursor].path
+					if m.secondCursor > len(m.tempString) {
+						m.secondCursor = len(m.tempString)
 					}
 				case "backspace":
-					m.temp_string = remove_at_index(m.temp_string, m.secondCursor)
+					m.tempString = remove_at_index(m.tempString, m.secondCursor)
 					if m.secondCursor > 0 {
 						m.secondCursor--
 					}
 				case "enter":
-					moveFile(m.currentDir+m.files[m.cursor].path, m.currentDir+m.temp_string)
+					moveFile(m.currentDir+m.files[m.cursor].path, m.currentDir+m.tempString)
 					t := m.cursor
 					m = reloadDir(m, "")
 					m.viewState = Default
 					m.secondCursor = 0
 					m.cursor = t
-					m.temp_string = ""
+					m.tempString = ""
 					m.View()
 				default:
 					if len(msg.String()) == 1 {
-						m.temp_string = add_to_string(m.temp_string, msg.String()[0], m.secondCursor)
+						m.tempString = add_to_string(m.tempString, msg.String()[0], m.secondCursor)
 						m.secondCursor++
 					}
 				}
@@ -269,15 +270,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m = reloadDir(m, pathToOpen+"/")
 					}
 				case "ctrl+v":
-					split := strings.Split(m.temp_string, "/")
+					split := strings.Split(m.tempString, "/")
 					file_name := split[len(split)-1]
-					err := moveFile(m.temp_string, m.currentDir+"/"+file_name)
+					err := moveFile(m.tempString, m.currentDir+"/"+file_name)
 					if err != nil {
 						fmt.Println(err)
 					} else {
 						m.viewState = Default
 					}
-					m.temp_string = ""
+					m.tempString = ""
 					m.viewState = Default
 					reloadDir(m, m.currentDir)
 				case "esc":
@@ -302,13 +303,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.cursor = 0
 					}
 				case "ctrl+v":
-					split := strings.Split(m.temp_string, "/")
+					split := strings.Split(m.tempString, "/")
 					file_name := split[len(split)-1]
-					_, err := copyFile(m.temp_string, m.currentDir+file_name)
+					_, err := copyFile(m.tempString, m.currentDir+file_name)
 					if err != nil {
 						fmt.Println(err)
 					}
-					m.temp_string = ""
+					m.tempString = ""
 					m.viewState = Default
 					reloadDir(m, "")
 				case "enter":
@@ -326,29 +327,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+	case tea.WindowSizeMsg:
+		m.height = msg.Height
+		m.width = msg.Width
 	}
 	return m, nil
 }
 
 func (m model) View() string {
+	var views []string
+
 	switch m.viewState {
 	case Default:
-		return defaultView(m)
+		views = append(views, defaultView(m))
 	case ConfirmDelete:
-		return confirmDeleteView(m)
+		views = append(views, confirmDeleteView(m))
 	case Rename:
-		return renameView(m)
+		views = append(views, renameView(m))
 	case Move:
-		return moveView(m)
+		views = append(views, moveView(m))
 	case Copy:
-		return copyView(m)
+		views = append(views, copyView(m))
 	case New:
-		return newView(m)
+		views = append(views, newView(m))
+	}
+	views = append(views, previewView(m))
+	if len(views) != 0 {
+		return lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + showBinds(m.config.keybinds)
 	}
 	return "Loading..."
 }
 func main() {
-	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
+	p := tea.NewProgram(initialmodel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)

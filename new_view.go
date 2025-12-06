@@ -12,19 +12,18 @@ func newView(m model) string {
 		s += fmt.Sprintf(" %s %s\n", file.fileType, file.path)
 	}
 	s += "> "
-	if m.secondCursor == len(m.temp_string) {
-		s += m.temp_string
+	if m.secondCursor == len(m.tempString) {
+		s += m.tempString
 		s += "|"
 	} else {
-		for j := range m.temp_string {
+		for j := range m.tempString {
 			if j == m.secondCursor {
-				s += fmt.Sprintf("|%c", m.temp_string[j])
+				s += fmt.Sprintf("|%c", m.tempString[j])
 			} else {
-				s += fmt.Sprintf("%c", m.temp_string[j])
+				s += fmt.Sprintf("%c", m.tempString[j])
 			}
 		}
 	}
 	s += "\n"
-	s += showBinds(m.config.keybinds)
 	return s
 }

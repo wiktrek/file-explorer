@@ -31,6 +31,5 @@ func defaultView(m model) string {
 	} else if m.search != "" {
 		s += "/" + m.search
 	}
-	s += showBinds(m.config.keybinds)
 	return s
 }

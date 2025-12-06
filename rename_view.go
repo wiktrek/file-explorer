@@ -13,15 +13,15 @@ func renameView(m model) string {
 			//  handle renaming
 			s += "> "
 
-			if m.secondCursor == len(m.temp_string) {
-				s += m.temp_string
+			if m.secondCursor == len(m.tempString) {
+				s += m.tempString
 				s += "|"
 			} else {
-				for j := range m.temp_string {
+				for j := range m.tempString {
 					if j == m.secondCursor {
-						s += fmt.Sprintf("|%c", m.temp_string[j])
+						s += fmt.Sprintf("|%c", m.tempString[j])
 					} else {
-						s += fmt.Sprintf("%c", m.temp_string[j])
+						s += fmt.Sprintf("%c", m.tempString[j])
 					}
 				}
 			}
