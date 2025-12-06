@@ -22,6 +22,16 @@ func add_to_string(str string, c byte, i int) string {
 	}
 	return fmt.Sprintf("%s%c%s", str[:i], c, str[i:])
 }
+func fillWithSpaces(str string, i int) string {
+	if len(str) >= i {
+		return str
+	}
+	for range i - len(str) {
+		str += " "
+	}
+	return str
+}
+
 func readFile(dir string) string {
 	data, err := os.ReadFile(dir)
 	if err != nil {

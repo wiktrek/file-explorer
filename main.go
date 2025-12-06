@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strings"
 
@@ -17,6 +18,7 @@ func initialmodel() model {
 		config:     config,
 		searching:  false,
 		viewState:  Default,
+		viewCount:  1,
 	}
 }
 
@@ -352,6 +354,17 @@ func (m model) View() string {
 		views = append(views, newView(m))
 	}
 	views = append(views, previewView(m))
+	m.viewCount = len(views)
+	viewWidth := int(math.Floor(float64(m.width) / float64(m.viewCount)))
+	for v := range len(views) {
+		split := strings.Split(views[v], "\n")
+		s := ""
+		for i := range len(split) {
+			s += fillWithSpaces(split[i], viewWidth-2) + "\n"
+			// s += split[i] + "\n"
+		}
+		views[v] = s
+	}
 	if len(views) != 0 {
 		return lipgloss.JoinHorizontal(lipgloss.Top, views...) + "\n\n" + showBinds(m.config.keybinds)
 	}

@@ -66,6 +66,7 @@ type model struct {
 	searching    bool
 	config       Config
 	viewState    ViewState
+	viewCount    int
 	height       int
 	width        int
 }
