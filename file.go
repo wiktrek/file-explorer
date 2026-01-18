@@ -31,7 +31,8 @@ func getConfig(configDir string) Config {
 	}
 	json.NewDecoder(bytes.NewBuffer(b)).Decode(&config)
 	if !pathExits(config.DefaultPath) {
-		config.DefaultPath = "/home/"
+		home, _ := os.UserHomeDir()
+		config.DefaultPath = home
 	}
 	// I hate the uppercase naming ( I will probably change this later)
 	return Config{
@@ -41,34 +42,36 @@ func getConfig(configDir string) Config {
 	}
 }
 func loadFiles(dir string) []File {
+	if !strings.HasSuffix(dir, string(filepath.Separator)) {
+		dir += string(filepath.Separator)
+	}
 	pattern := "*"
-	matches, err := filepath.Glob(dir + pattern)
+	matches, err := filepath.Glob(filepath.Join(dir, pattern))
 	if err != nil {
 		log.Fatal(err)
 	}
 	var files []File
 	for _, match := range matches {
-		split := strings.Split(match, "/")
-		file_name := split[len(split)-1]
+		file_name := filepath.Base(match)
 		files = append(files, File{
 			path:     file_name,
-			fileType: getIcon(dir + file_name),
+			fileType: getIcon(filepath.Join(dir, file_name)),
 		})
 	}
 	return files
 }
 func goUp(dir string) string {
-
-	if dir[len(dir)-1] == '/' {
+	if !strings.HasSuffix(dir, string(filepath.Separator)) {
 		dir = dir[:len(dir)-1]
 	}
-	var split = strings.Split(dir, "/")
-	result := strings.Join(split[:len(split)-1], "/")
-
-	if len(result) <= 1 {
-		return "/"
+	parent := filepath.Dir(dir)
+	if parent == dir {
+		return dir
 	}
-	return result + "/"
+	if !strings.HasSuffix(parent, string(filepath.Separator)) {
+		parent += string(filepath.Separator)
+	}
+	return parent
 }
 
 func reloadDir(m model, path string) model {

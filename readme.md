@@ -1,20 +1,23 @@
+# TFE - Terminal File Explorer
+## TFE is my take on file explorers it works in a terminal
 ![](./assets/default.png)
 # What I want to add in the future:
-- [x] read files
-- [x] delete files
-- [x] modify files (open editor)
-- [x] rename files
-- [x] move files
-- [x] clipboard
-- [x] icons
-- [x] copy files
-- [x] search files
-- [ ] preview text files
-- [ ] preview folders
-- [ ] editor inside file-explorer
-- [ ] copy path
-- [ ] search multiple folders
-- [ ] smb
+- editor inside file-explorer
+- copy path
+- search multiple folders
+- smb
+# Things I already added
+- reading files
+- deleting files
+- modifying files (open editor)
+- renaming files
+- moving files
+- clipboard
+- icons
+- copying files
+- searching files
+- previewing text files
+- previewing folders
 # Installation
 ### For now you need to clone the repository and run it yourself using
 ```bash
@@ -25,3 +28,5 @@ go run .
 - When view isn't default searching breaks almost everything
 - cursor value doesn't change while searching which can cause crashes 
 - when previewing files contents of files merge in the preview
+
+Yes I know that I'm bad at naming things

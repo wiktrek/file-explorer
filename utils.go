@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -62,8 +63,7 @@ func getIcon(file string) string {
 	if err != nil {
 		fmt.Println(err)
 	}
-	file_split := strings.Split(file, "/")
-	file_name := file_split[len(file_split)-1]
+	file_name := filepath.Base(file)
 	if r {
 		if folders[file_name] != "" {
 			return folders[file_name]
