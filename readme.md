@@ -1,5 +1,8 @@
 # TFE - Terminal File Explorer
 ## TFE is my take on file explorers it works in a terminal
+> [!WARNING]
+> TFE is still in early development. Please use it only if you know what you are doing and in a safe environment.  
+
 ![](./assets/default.png)
 # What I want to add in the future:
 - editor inside file-explorer
